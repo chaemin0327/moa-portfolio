@@ -31,14 +31,14 @@
   const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.archive}</svg>`;
   document.querySelectorAll('[data-icon]').forEach(el => el.innerHTML = icon(el.dataset.icon));
   const types = {
-    PROJECT: {label:'프로젝트', icon:'project', color:'#788f77', bg:'#eef2e9'},
-    COMPETITION: {label:'공모전', icon:'trophy', color:'#b08b50', bg:'#f7f0df'},
-    AWARD: {label:'수상 경력', icon:'trophy', color:'#bf885e', bg:'#faf0e4'},
-    CERTIFICATE: {label:'자격증', icon:'certificate', color:'#8f88a1', bg:'#f1edf6'},
-    PAPER: {label:'논문', icon:'paper', color:'#7e94a2', bg:'#edf2f5'},
-    OVERSEAS: {label:'해외 경험', icon:'globe', color:'#7b9a94', bg:'#eaf2ef'},
-    ACTIVITY: {label:'동아리/대외활동', icon:'people', color:'#b28d8f', bg:'#f6ecec'},
-    EDUCATION: {label:'교육 / 기타', icon:'book', color:'#9c947a', bg:'#f1efe7'}
+    PROJECT: {label:'프로젝트', icon:'project', color:'#475569', bg:'#f1f5f9'},
+    COMPETITION: {label:'공모전', icon:'trophy', color:'#475569', bg:'#f1f5f9'},
+    AWARD: {label:'수상 경력', icon:'trophy', color:'#475569', bg:'#f1f5f9'},
+    CERTIFICATE: {label:'자격증', icon:'certificate', color:'#475569', bg:'#f1f5f9'},
+    PAPER: {label:'논문', icon:'paper', color:'#475569', bg:'#f1f5f9'},
+    OVERSEAS: {label:'해외 경험', icon:'globe', color:'#475569', bg:'#f1f5f9'},
+    ACTIVITY: {label:'동아리/대외활동', icon:'people', color:'#475569', bg:'#f1f5f9'},
+    EDUCATION: {label:'교육 / 기타', icon:'book', color:'#475569', bg:'#f1f5f9'}
   };
   const $ = selector => document.querySelector(selector);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -72,10 +72,10 @@
   function renderStats() {
     const es = state.experiences, thisYear = new Date().getFullYear();
     const stats = [
-      ['archive','모아둔 경험',es.length,'개','#f0ece3','#a99b7c','소중한 기록'],
-      ['sprout','올해의 경험',es.filter(e => e.startDate.startsWith(String(thisYear))).length,'개','#ecf0e5','#8d9d76',String(thisYear)],
-      ['timeline','진행 중',es.filter(e => e.ongoing).length,'개','#edf1ef','#7f9a8e','한 걸음씩'],
-      ['star','포트폴리오에 담은 경험',es.filter(e => e.featured).length,'개','#f5eee1','#b59b6d','나를 보여주는']
+      ['archive','모아둔 경험',es.length,'개','#eff6ff','#2563eb','소중한 기록'],
+      ['sprout','올해의 경험',es.filter(e => e.startDate.startsWith(String(thisYear))).length,'개','#f1f5f9','#172a46',String(thisYear)],
+      ['timeline','진행 중',es.filter(e => e.ongoing).length,'개','#eff6ff','#2563eb','한 걸음씩'],
+      ['star','포트폴리오에 담은 경험',es.filter(e => e.featured).length,'개','#fff7ed','#b45309','나를 보여주는']
     ];
     $('#stats').innerHTML = stats.map(([i,l,n,u,b,c,note]) => `<div class="stat" style="--stat-bg:${b};--stat-color:${c}"><span class="stat-icon">${icon(i)}</span><span class="stat-copy"><span class="stat-label">${l}</span><strong>${n}<small>${u}</small></strong></span><span class="stat-note">${note}</span></div>`).join('');
   }

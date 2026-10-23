@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fbf9f6"><meta name="description" content="흩어진 경험을 모아, 나만의 이야기로. 모아 경험 아카이브">
+  <meta name="theme-color" content="#ffffff"><meta name="description" content="흩어진 경험을 모아, 나만의 이야기로. 모아 경험 아카이브">
   <title>모아 — 나의 경험 아카이브</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
@@ -10,7 +10,7 @@
 <body>
   <a class="skip-link" href="#main">본문으로 이동</a>
   <aside class="sidebar" id="sidebar">
-    <a href="#archive" class="brand" aria-label="모아 홈"><span class="brand-mark">✳</span><strong>모아<span class="brand-dot">.</span></strong><span class="brand-caption">my own archive</span></a>
+    <a href="#archive" class="brand" aria-label="모아 홈"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28"><rect x="2" y="2" width="10" height="10" rx="3"/><rect x="16" y="2" width="10" height="10" rx="3"/><rect x="2" y="16" width="10" height="10" rx="3"/><rect x="16" y="16" width="10" height="10" rx="3" opacity=".35"/></svg></span><strong>모아<span class="brand-dot">.</span></strong><span class="brand-caption">my own archive</span></a>
     <div class="workspace-label">MY WORKSPACE <span>개인 공간</span></div>
     <nav class="primary-nav" aria-label="주 메뉴">
       <button class="nav-item active" data-page="archive"><i data-icon="archive"></i>나의 경험<span id="nav-count" class="count">0</span></button>
@@ -28,10 +28,6 @@
     <main id="main" tabindex="-1">
       <section class="hero" id="hero">
         <div class="hero-copy"><div class="eyebrow"><span></span> EVERY EXPERIENCE MATTERS</div><h1>흩어진 경험을 모아,<br><em>나만의 이야기로.</em></h1><p>작은 도전부터 빛나는 순간까지.<br class="mobile-break"> 오늘의 경험이 내일의 나를 만듭니다.</p><button class="text-link" data-action="add">새로운 경험 기록하기 <span>↗</span></button></div>
-        <div class="hero-art" aria-hidden="true">
-          <span class="art-spark spark-one">✳</span><span class="art-spark spark-two">✧</span><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-          <div class="art-paper paper-back"></div><div class="art-paper paper-front"><span class="mini-pill"><span></span> MY JOURNEY</span><div class="paper-line wide"></div><div class="paper-line"></div><div class="mini-timeline"><span class="mini-node peach"></span><div><b>A little step</b><small>작은 시작도 소중하니까</small></div></div><div class="mini-timeline"><span class="mini-node sage"></span><div><b>A new chapter</b><small>나만의 이야기를 쌓아가는 중</small></div></div><div class="mini-timeline"><span class="mini-node lavender"></span><div><b>More to come</b><small>다음 경험을 기다리며</small></div></div></div><div class="art-label"><span>✦</span> a collection of you</div>
-        </div>
       </section>
       <div id="stats" class="stats" aria-label="경험 통계"></div>
       <section id="archive-page" class="page-section">
