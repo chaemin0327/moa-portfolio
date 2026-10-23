@@ -23,6 +23,7 @@ public class Experience {
     @Column(length = 1000) String link;
     boolean featured;
     boolean demo;
+    @Column(length = 30) String customCategory;
 
     protected Experience() {}
 
@@ -38,6 +39,8 @@ public class Experience {
         participants = clean(r.participants()); role = clean(r.role());
         description = clean(r.description()); outcome = clean(r.outcome());
         tags = clean(r.tags()); link = clean(r.link()); featured = r.featured();
+        customCategory = type == ExperienceType.CUSTOM
+                ? clean(r.customCategory()).replaceAll("(?U)\\s+", " ") : "";
     }
 
     private static String clean(String value) { return value == null ? "" : value.strip(); }

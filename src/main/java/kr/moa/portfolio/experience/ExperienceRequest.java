@@ -17,5 +17,6 @@ public record ExperienceRequest(
         @Size(max = 1000) String outcome,
         @Size(max = 300) String tags,
         @Size(max = 1000) String link,
-        boolean featured
+        boolean featured,
+        @Size(max = 30, message = "분류 이름은 30자 이내로 입력해주세요.") String customCategory
 ) {}
