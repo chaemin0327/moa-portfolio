@@ -452,3 +452,15 @@ main { padding: 38px 42px 0; max-width: 1550px; margin: 0 auto; }
 
 .category-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .category-dot { flex-shrink: 0; }
+
+.result-fieldset, .links-fieldset { min-width: 0; border: 0; margin: 0; padding: 0; }
+.result-fieldset legend, .links-fieldset legend { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.result-fieldset small, .links-fieldset small { display: block; color: var(--muted); font-size: 11px; line-height: 1.7; margin-top: 8px; }
+.link-row { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.link-row .field { min-width: 0; }
+.link-row .icon-button { width: 40px; height: 40px; }
+#add-link { margin-top: 2px; font-size: 12px; }
+.related-links { display: grid; gap: 10px; margin-top: 12px; min-width: 0; }
+.related-links a { font-size: 12px; color: var(--accent); text-decoration: underline; overflow-wrap: anywhere; }
+.timeline-card .timeline-result { color: var(--amber); margin-top: 7px; }
+@media (max-width: 600px) { .result-fieldset .form-grid { grid-template-columns: 1fr; } }

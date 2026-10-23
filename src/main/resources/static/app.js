@@ -59,6 +59,28 @@
   function safeLink(value) {
     try { const u = new URL(value); return ['https:', 'http:'].includes(u.protocol) ? escape(u.href) : ''; } catch { return ''; }
   }
+  const resultSummary = e => [e.placement,e.awardName].filter(Boolean).join(' · ');
+  const linksFor = e => Array.isArray(e.links) ? e.links : e.link ? [e.link] : [];
+  const linksHtml = e => `<div class="related-links">${linksFor(e).filter(safeLink).map(url => `<a href="${safeLink(url)}" target="_blank" rel="noopener noreferrer">${escape(url)} ↗</a>`).join('')}</div>`;
+  const resultHtml = e => resultSummary(e) ? `<section class="detail-section outcome"><h3>최종 결과</h3><p>${escape(resultSummary(e))}</p></section>` : '';
+  function updateLinkRows() {
+    const rows = [...$('#experience-links').children];
+    rows.forEach((row,index) => {
+      row.querySelector('input').setAttribute('aria-label',`관련 링크 ${index+1}`);
+      row.querySelector('button').setAttribute('aria-label',`${index+1}번 링크 삭제`);
+    });
+    $('#add-link').disabled = rows.length >= 10;
+  }
+  function addLinkRow(value='') {
+    if ($('#experience-links').children.length >= 10) return;
+    const row = document.createElement('div'); row.className = 'link-row';
+    row.innerHTML = `<label class="field"><input name="links" type="url" maxlength="1000" placeholder="https://github.com/..." value="${escape(value)}"></label><button class="icon-button" type="button" data-remove-link title="링크 삭제">${icon('close')}</button>`;
+    $('#experience-links').append(row); updateLinkRows();
+  }
+  function renderLinkInputs(values) {
+    $('#experience-links').replaceChildren();
+    (values.length ? values : ['']).forEach(addLinkRow);
+  }
   async function api(path, options={}) {
     const response = await fetch(`/api${path}`, {headers:{'Content-Type':'application/json'}, ...options});
     if (!response.ok) {
@@ -103,13 +125,13 @@
   function filtered() {
     const q = state.query.toLocaleLowerCase();
     return state.experiences.filter(e => matchesCategory(e,state.filter) &&
-      [e.title,e.organization,e.location,e.tags,e.description,e.participants,e.role,categoryLabel(e)].some(s => (s || '').toLocaleLowerCase().includes(q)))
+      [e.title,e.organization,e.location,e.tags,e.description,e.participants,e.role,e.placement,e.awardName,categoryLabel(e)].some(s => (s || '').toLocaleLowerCase().includes(q)))
       .sort((a,b) => state.sort === 'title' ? a.title.localeCompare(b.title, 'ko') :
         state.sort === 'oldest' ? a.startDate.localeCompare(b.startDate) || a.id-b.id : b.startDate.localeCompare(a.startDate) || b.id-a.id);
   }
   function card(e) {
-    const award = [ 'COMPETITION','AWARD' ].includes(e.type) && e.outcome;
-    return `<article class="experience-card" data-id="${e.id}" style="${typeStyle(e.type)}"><div class="card-top">${badge(e)}<button class="star-button ${e.featured?'selected':''}" data-star="${e.id}" aria-label="${e.featured?'포트폴리오에서 빼기':'포트폴리오에 담기'}: ${escape(e.title)}" aria-pressed="${e.featured}" title="${e.featured?'포트폴리오에서 빼기':'포트폴리오에 담기'}">${icon('star')}</button></div><h3><button class="card-title-button" data-detail="${e.id}">${escape(e.title)}</button></h3><p class="card-org">${escape(e.organization || e.location || categoryLabel(e))}</p><p class="card-description">${escape(e.description || '이 경험의 이야기를 조금 더 채워보세요.')}</p><div class="card-tags">${tagHtml(e.tags)}</div><div class="card-bottom"><span class="card-date">${icon('calendar')}${escape(period(e))}</span>${e.ongoing?'<span class="ongoing-pill">진행 중</span>':award?`<span class="outcome-pill" title="${escape(e.outcome)}">${icon('trophy')}${escape(e.outcome)}</span>`:''}</div></article>`;
+    const award = [ 'COMPETITION','AWARD' ].includes(e.type) && (resultSummary(e) || e.outcome);
+    return `<article class="experience-card" data-id="${e.id}" style="${typeStyle(e.type)}"><div class="card-top">${badge(e)}<button class="star-button ${e.featured?'selected':''}" data-star="${e.id}" aria-label="${e.featured?'포트폴리오에서 빼기':'포트폴리오에 담기'}: ${escape(e.title)}" aria-pressed="${e.featured}" title="${e.featured?'포트폴리오에서 빼기':'포트폴리오에 담기'}">${icon('star')}</button></div><h3><button class="card-title-button" data-detail="${e.id}">${escape(e.title)}</button></h3><p class="card-org">${escape(e.organization || e.location || categoryLabel(e))}</p><p class="card-description">${escape(e.description || '이 경험의 이야기를 조금 더 채워보세요.')}</p><div class="card-tags">${tagHtml(e.tags)}</div><div class="card-bottom"><span class="card-date">${icon('calendar')}${escape(period(e))}</span>${e.ongoing?'<span class="ongoing-pill">진행 중</span>':award?`<span class="outcome-pill" title="${escape(award)}">${icon('trophy')}${escape(award)}</span>`:''}</div></article>`;
   }
   const addCard = () => `<button class="add-card" data-action="add"><span class="plus-circle">${icon('plus')}</span><strong>다음 이야기를 더해보세요</strong><small>작은 경험도 나만의 자산이 되니까</small></button>`;
   function renderExperiences() {
@@ -125,11 +147,11 @@
     const list = state.experiences.filter(e => matchesCategory(e,kind)).sort((a,b) => b.startDate.localeCompare(a.startDate) || b.id-a.id);
     if (!list.length) { $('#timeline-list').innerHTML = `<div class="empty-state"><span>${icon('timeline')}</span><h3>이야기의 시작을 남겨보세요</h3><p>등록한 경험이 시간순으로 이곳에 쌓여요.</p><button class="button primary" data-action="add">경험 추가하기</button></div>`; return; }
     const years = [...new Set(list.map(e => e.startDate.slice(0,4)))];
-    $('#timeline-list').innerHTML = years.map(year => `<section class="timeline-year"><h3 class="year-label">${year}</h3><div class="timeline-items">${list.filter(e => e.startDate.startsWith(year)).map(e => `<div class="timeline-item" style="${typeStyle(e.type)}"><button class="timeline-card" data-detail="${e.id}"><span class="timeline-month">${e.startDate.slice(5,7)}월 ${e.startDate.slice(8,10)}일</span><div>${badge(e)}<h3>${escape(e.title)}</h3><p>${escape(e.organization)}${e.role ? ' · '+escape(e.role) : ''}</p></div><i>${icon('arrowRight')}</i></button></div>`).join('')}</div></section>`).join('');
+    $('#timeline-list').innerHTML = years.map(year => `<section class="timeline-year"><h3 class="year-label">${year}</h3><div class="timeline-items">${list.filter(e => e.startDate.startsWith(year)).map(e => `<div class="timeline-item" style="${typeStyle(e.type)}"><button class="timeline-card" data-detail="${e.id}"><span class="timeline-month">${e.startDate.slice(5,7)}월 ${e.startDate.slice(8,10)}일</span><div>${badge(e)}<h3>${escape(e.title)}</h3><p>${escape(e.organization)}${e.role ? ' · '+escape(e.role) : ''}</p>${resultSummary(e)?`<p class="timeline-result">${escape(resultSummary(e))}</p>`:''}</div><i>${icon('arrowRight')}</i></button></div>`).join('')}</div></section>`).join('');
   }
   function renderPortfolio() {
     const p = state.profile, list = state.experiences.filter(e => e.featured).sort((a,b) => b.startDate.localeCompare(a.startDate) || b.id-a.id);
-    $('#portfolio-sheet').innerHTML = `<header class="portfolio-header"><div class="portfolio-eyebrow">MY EXPERIENCE, MY STORY</div><h1>${escape(p.name)}</h1><p class="portfolio-headline">${escape(p.headline)}</p>${p.bio?`<p class="portfolio-bio">${escape(p.bio)}</p>`:''}${p.email?`<a class="portfolio-email" href="mailto:${escape(p.email)}">${escape(p.email)}</a>`:''}</header><h2 class="portfolio-section-title">SELECTED EXPERIENCES <span>· ${list.length}</span></h2>${list.length ? list.map(e => `<section class="portfolio-item"><div class="portfolio-date">${escape(period(e))}</div><div>${badge(e)}<h3>${escape(e.title)}</h3><p class="item-meta">${escape([e.organization,e.location,e.role].filter(Boolean).join(' · '))}</p>${e.participants?`<p class="item-meta">함께한 사람 · ${escape(e.participants)}</p>`:''}${e.description?`<p>${escape(e.description)}</p>`:''}${e.outcome?`<p class="item-outcome">${escape(e.outcome)}</p>`:''}<div class="card-tags">${tagHtml(e.tags,30)}</div>${safeLink(e.link)?`<a href="${safeLink(e.link)}" target="_blank" rel="noopener noreferrer">${escape(e.link)} ↗</a>`:''}</div></section>`).join('') : '<div class="empty-state"><h3>나를 보여줄 경험을 골라보세요</h3><p>경험 카드의 별표를 누르면 이곳에 담겨요.</p></div>'}<footer class="portfolio-end">A COLLECTION OF MY JOURNEY<span>모아 ✳</span></footer>`;
+    $('#portfolio-sheet').innerHTML = `<header class="portfolio-header"><div class="portfolio-eyebrow">MY EXPERIENCE, MY STORY</div><h1>${escape(p.name)}</h1><p class="portfolio-headline">${escape(p.headline)}</p>${p.bio?`<p class="portfolio-bio">${escape(p.bio)}</p>`:''}${p.email?`<a class="portfolio-email" href="mailto:${escape(p.email)}">${escape(p.email)}</a>`:''}</header><h2 class="portfolio-section-title">SELECTED EXPERIENCES <span>· ${list.length}</span></h2>${list.length ? list.map(e => `<section class="portfolio-item"><div class="portfolio-date">${escape(period(e))}</div><div>${badge(e)}<h3>${escape(e.title)}</h3><p class="item-meta">${escape([e.organization,e.location,e.role].filter(Boolean).join(' · '))}</p>${e.participants?`<p class="item-meta">함께한 사람 · ${escape(e.participants)}</p>`:''}${e.description?`<p>${escape(e.description)}</p>`:''}${resultHtml(e)}${e.outcome?`<p class="item-outcome">${escape(e.outcome)}</p>`:''}<div class="card-tags">${tagHtml(e.tags,30)}</div>${linksHtml(e)}</div></section>`).join('') : '<div class="empty-state"><h3>나를 보여줄 경험을 골라보세요</h3><p>경험 카드의 별표를 누르면 이곳에 담겨요.</p></div>'}<footer class="portfolio-end">A COLLECTION OF MY JOURNEY<span>모아 ✳</span></footer>`;
   }
   function render() {
     renderStats(); renderFilters(); renderExperiences(); renderTimeline(); renderPortfolio();
@@ -151,7 +173,10 @@
   function configureFields() {
     const form = $('#experience-form'), type = form.elements.type.value;
     const single = ['CERTIFICATE','AWARD'].includes(type), certificate = type === 'CERTIFICATE', paper = type === 'PAPER';
-    const custom = type === 'CUSTOM', work = type === 'WORK';
+    const custom = type === 'CUSTOM', work = type === 'WORK', competition = ['COMPETITION','AWARD'].includes(type);
+    $('#competition-results').hidden = !competition;
+    form.elements.placement.disabled = !competition;
+    form.elements.awardName.disabled = !competition;
     $('#custom-category-field').hidden = !custom;
     form.elements.customCategory.disabled = !custom;
     form.elements.customCategory.required = custom;
@@ -167,7 +192,7 @@
     $('#start-label').textContent = certificate ? '취득일 *' : type === 'AWARD' ? '수상일 *' : work ? '근무 시작일 *' : '시작일 *';
     $('#end-label').textContent = certificate ? '유효기간 종료일 (선택)' : work ? '근무 종료일 (선택)' : '종료일 (선택)';
     $('#role-label').textContent = paper ? '저자 역할 / 기여' : work ? '직무 / 역할' : '나의 역할';
-    $('#outcome-label').textContent = ({WORK:'업무 성과 / 배운 점',COMPETITION:'수상 여부 / 결과',AWARD:'수상 내역',CERTIFICATE:'등급 / 합격 결과',PAPER:'게재 / 발표 정보',OVERSEAS:'활동 결과 / 배운 점'})[type] || '결과 / 성과';
+    $('#outcome-label').textContent = ({WORK:'업무 성과 / 배운 점',COMPETITION:'성과 / 배운 점',AWARD:'성과 / 배운 점',CERTIFICATE:'등급 / 합격 결과',PAPER:'게재 / 발표 정보',OVERSEAS:'활동 결과 / 배운 점'})[type] || '결과 / 성과';
     $('#tags-label').textContent = type === 'PROJECT' || work ? '태그 / 사용 기술' : '태그';
     form.elements.endDate.disabled = form.elements.ongoing.checked;
     form.elements.endDate.min = form.elements.startDate.value;
@@ -178,7 +203,8 @@
     const customFilter = state.filter.startsWith('custom:');
     form.elements.type.value = item?.type || (customFilter ? 'CUSTOM' : state.filter === 'ALL' ? 'PROJECT' : state.filter);
     if (!item && customFilter) form.elements.customCategory.value = state.filter.slice(7);
-    if (item) Object.entries(item).forEach(([k,v]) => { const el = form.elements.namedItem(k); if (!el) return; if (el.type === 'checkbox') el.checked = v; else el.value = v ?? ''; });
+    if (item) Object.entries(item).forEach(([k,v]) => { if (k === 'links') return; const el = form.elements.namedItem(k); if (!el) return; if (el.type === 'checkbox') el.checked = v; else el.value = v ?? ''; });
+    renderLinkInputs(linksFor(item || {}));
     $('#experience-dialog-title').textContent = item ? '경험 다듬기' : '새로운 경험 기록하기';
     $('#save-experience').innerHTML = `${item ? '수정 내용 저장' : '경험 저장하기'} ${icon('arrowRight')}`;
     $('#form-error').textContent = ''; configureFields(); showDialog('#experience-dialog');
@@ -186,7 +212,7 @@
   function openDetail(id) {
     const e = state.experiences.find(e => e.id === id); if (!e) return;
     const meta = [[e.type === 'WORK' ? '회사 / 부서' : '기관 / 소속',e.organization],['장소',e.location],['함께한 사람',e.participants],[e.type === 'WORK' ? '직무 / 역할' : '나의 역할',e.role]];
-    $('#detail-content').innerHTML = `<header class="detail-header">${badge(e)}<button class="icon-button" data-close aria-label="닫기">${icon('close')}</button><h2 id="detail-title">${escape(e.title)}</h2><span class="detail-date">${escape(period(e))}${e.demo?' · 예시 기록':''}</span></header><div class="detail-body"><dl class="detail-meta">${meta.filter(([,v]) => v).map(([l,v]) => `<div><dt>${l}</dt><dd>${escape(v)}</dd></div>`).join('')}</dl>${e.description?`<section class="detail-section"><h3>경험 이야기</h3><p>${escape(e.description)}</p></section>`:''}${e.outcome?`<section class="detail-section outcome"><h3>결과 / 성과</h3><p>${escape(e.outcome)}</p></section>`:''}<div class="card-tags">${tagHtml(e.tags,30)}</div>${safeLink(e.link)?`<a class="detail-link" href="${safeLink(e.link)}" target="_blank" rel="noopener noreferrer">${escape(e.link)} ↗</a>`:''}<p class="detail-date">${e.featured?'✦ 포트폴리오에 담긴 경험이에요.':'카드의 별표를 눌러 포트폴리오에 담을 수 있어요.'}</p></div><footer class="modal-footer detail-footer"><button class="delete-button" data-delete="${id}">${icon('trash')}삭제</button><div><button class="button secondary" data-close>닫기</button><button class="button primary" data-edit="${id}">${icon('edit')}경험 수정하기</button></div></footer>`;
+    $('#detail-content').innerHTML = `<header class="detail-header">${badge(e)}<button class="icon-button" data-close aria-label="닫기">${icon('close')}</button><h2 id="detail-title">${escape(e.title)}</h2><span class="detail-date">${escape(period(e))}${e.demo?' · 예시 기록':''}</span></header><div class="detail-body"><dl class="detail-meta">${meta.filter(([,v]) => v).map(([l,v]) => `<div><dt>${l}</dt><dd>${escape(v)}</dd></div>`).join('')}</dl>${e.description?`<section class="detail-section"><h3>경험 이야기</h3><p>${escape(e.description)}</p></section>`:''}${resultHtml(e)}${e.outcome?`<section class="detail-section outcome"><h3>결과 / 성과</h3><p>${escape(e.outcome)}</p></section>`:''}<div class="card-tags">${tagHtml(e.tags,30)}</div>${linksFor(e).length?`<section class="detail-section"><h3>관련 링크</h3>${linksHtml(e)}</section>`:''}<p class="detail-date">${e.featured?'✦ 포트폴리오에 담긴 경험이에요.':'카드의 별표를 눌러 포트폴리오에 담을 수 있어요.'}</p></div><footer class="modal-footer detail-footer"><button class="delete-button" data-delete="${id}">${icon('trash')}삭제</button><div><button class="button secondary" data-close>닫기</button><button class="button primary" data-edit="${id}">${icon('edit')}경험 수정하기</button></div></footer>`;
     showDialog('#detail-dialog');
   }
   let confirmAction;
@@ -201,6 +227,9 @@
     finally {button.disabled=false;}
   });
   document.addEventListener('click', event => {
+    if (event.target.closest('#add-link')) { addLinkRow(); $('#experience-links').lastElementChild.querySelector('input').focus(); return; }
+    const removeLink = event.target.closest('[data-remove-link]');
+    if (removeLink) { const row = removeLink.closest('.link-row'); if ($('#experience-links').children.length === 1) row.querySelector('input').value = ''; else row.remove(); updateLinkRows(); return; }
     const close = event.target.closest('[data-close]'); if (close) { close.closest('dialog').close(); return; }
     const add = event.target.closest('[data-action="add"]'); if (add) { if(state.loaded) openExperience(); else toast('데이터를 먼저 불러와주세요.',true); return; }
     const nav = event.target.closest('[data-page]'); if (nav) { navigate(nav.dataset.page); return; }
@@ -221,6 +250,7 @@
   $('#experience-form').addEventListener('change', configureFields);
   $('#experience-form').addEventListener('submit', async event => {
     event.preventDefault();const form=event.currentTarget, data=Object.fromEntries(new FormData(form));
+    data.links=[...$('#experience-links').querySelectorAll('input')].map(input=>input.value.trim()).filter(Boolean);
     data.ongoing=form.elements.ongoing.checked;data.featured=form.elements.featured.checked;
     data.endDate=data.ongoing || !data.endDate ? null : data.endDate;
     data.participants=data.participants || '';data.role=data.role || '';
