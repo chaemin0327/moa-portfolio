@@ -56,6 +56,10 @@ public class ExperienceController {
     }
 
     private void validate(ExperienceRequest r) {
+        if (r.type() == ExperienceType.CUSTOM &&
+                (r.customCategory() == null || r.customCategory().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "직접 추가할 분류 이름을 입력해주세요.");
+        }
         if (r.endDate() != null && !r.ongoing() && r.endDate().isBefore(r.startDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후로 입력해주세요.");
         }

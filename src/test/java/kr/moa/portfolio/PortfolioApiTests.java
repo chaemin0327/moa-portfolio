@@ -97,4 +97,57 @@ class PortfolioApiTests {
                         .content("{\"name\":\"홍길동\",\"email\":\"invalid\"}"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test void workExperienceKeepsEmploymentDetails() throws Exception {
+        var data = experience(); data.put("type", "WORK");
+        data.put("organization", "모아 회사 / 개발팀"); data.put("role", "백엔드 인턴");
+        data.put("ongoing", true); data.put("outcome", "API 응답 시간 개선");
+        mvc.perform(get(create(data))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("WORK"))
+                .andExpect(jsonPath("$.organization").value("모아 회사 / 개발팀"))
+                .andExpect(jsonPath("$.role").value("백엔드 인턴"))
+                .andExpect(jsonPath("$.ongoing").value(true));
+    }
+
+    @Test void customCategoryIsNormalizedAndCanBeEdited() throws Exception {
+        var data = experience(); data.put("type", "CUSTOM");
+        data.put("customCategory", "  교육   봉사  ");
+        var location = create(data);
+        mvc.perform(get(location)).andExpect(jsonPath("$.customCategory").value("교육 봉사"));
+        data.put("customCategory", "멘토링");
+        mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.customCategory").value("멘토링"));
+        mvc.perform(get(location)).andExpect(jsonPath("$.customCategory").value("멘토링"));
+        mvc.perform(delete(location)).andExpect(status().isNoContent());
+    }
+
+    @Test void rejectsMissingBlankAndOverlongCustomNames() throws Exception {
+        var data = experience(); data.put("type", "CUSTOM");
+        for (var name : new String[]{"", "   ", "가".repeat(31)}) {
+            data.put("customCategory", name);
+            mvc.perform(post("/api/experiences").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                    .andExpect(status().isBadRequest());
+        }
+        data.remove("customCategory");
+        mvc.perform(post("/api/experiences").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test void switchingToBuiltinTypeClearsCustomName() throws Exception {
+        var data = experience(); data.put("type", "CUSTOM"); data.put("customCategory", "멘토링");
+        var location = create(data);
+        data.put("type", "PROJECT");
+        mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.customCategory").value(""));
+        mvc.perform(get(location)).andExpect(jsonPath("$.customCategory").value(""));
+    }
+
+    @Test void existingTypesStillAcceptRequestsWithoutCustomCategory() throws Exception {
+        for (var type : new String[]{"PROJECT", "COMPETITION", "AWARD", "CERTIFICATE", "PAPER", "OVERSEAS", "ACTIVITY", "EDUCATION"}) {
+            var data = experience(); data.put("type", type);
+            mvc.perform(get(create(data))).andExpect(status().isOk())
+                    .andExpect(jsonPath("$.type").value(type))
+                    .andExpect(jsonPath("$.customCategory").value(""));
+        }
+    }
 }
