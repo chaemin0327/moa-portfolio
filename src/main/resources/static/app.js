@@ -101,9 +101,9 @@
   function renderStats() {
     const es = state.experiences, thisYear = new Date().getFullYear();
     const stats = [
-      ['archive','모아둔 경험',es.length,'개','#eff6ff','#2563eb','소중한 기록'],
+      ['archive','모아둔 경험',es.length,'개','var(--accent-light)','var(--accent)','소중한 기록'],
       ['sprout','올해의 경험',es.filter(e => e.startDate.startsWith(String(thisYear))).length,'개','#f1f5f9','#172a46',String(thisYear)],
-      ['timeline','진행 중',es.filter(e => e.ongoing).length,'개','#eff6ff','#2563eb','한 걸음씩'],
+      ['timeline','진행 중',es.filter(e => e.ongoing).length,'개','var(--accent-light)','var(--accent)','한 걸음씩'],
       ['star','포트폴리오에 담은 경험',es.filter(e => e.featured).length,'개','#fff7ed','#b45309','나를 보여주는']
     ];
     $('#stats').innerHTML = stats.map(([i,l,n,u,b,c,note]) => `<div class="stat" style="--stat-bg:${b};--stat-color:${c}"><span class="stat-icon">${icon(i)}</span><span class="stat-copy"><span class="stat-label">${l}</span><strong>${n}<small>${u}</small></strong></span><span class="stat-note">${note}</span></div>`).join('');
