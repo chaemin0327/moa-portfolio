@@ -10,6 +10,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import jakarta.persistence.EntityManager;
+import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -23,6 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PortfolioApiTests {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired EntityManager entityManager;
+    @Autowired JdbcTemplate jdbc;
 
     private Map<String, Object> experience() {
         return new LinkedHashMap<>(Map.of(
@@ -149,5 +155,66 @@ class PortfolioApiTests {
                     .andExpect(jsonPath("$.type").value(type))
                     .andExpect(jsonPath("$.customCategory").value(""));
         }
+    }
+
+    @Test void competitionKeepsPlacementAndAwardSeparatelyFromOutcome() throws Exception {
+        var data = experience(); data.put("type", "COMPETITION");
+        data.put("placement", "3위 / 본선 진출"); data.put("awardName", "우수상");
+        data.put("outcome", "사용자 인터뷰와 프로토타입 개발");
+        var location = create(data);
+        mvc.perform(get(location)).andExpect(jsonPath("$.placement").value("3위 / 본선 진출"))
+                .andExpect(jsonPath("$.awardName").value("우수상"))
+                .andExpect(jsonPath("$.outcome").value("사용자 인터뷰와 프로토타입 개발"));
+        data.put("placement", "2위"); data.put("awardName", "최우수상");
+        mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.awardName").value("최우수상"));
+    }
+
+    @Test void multipleLinksKeepOrderAndAreRemovedWithExperience() throws Exception {
+        var data = experience();
+        data.put("links", List.of(" https://example.com/code ", "https://example.com/slides", "https://example.com/code"));
+        var location = create(data);
+        var result = mvc.perform(get(location)).andExpect(jsonPath("$.links.length()").value(2))
+                .andExpect(jsonPath("$.links[0]").value("https://example.com/code"))
+                .andExpect(jsonPath("$.links[1]").value("https://example.com/slides"))
+                .andExpect(jsonPath("$.link").value("https://example.com/code")).andReturn();
+        long id = json.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        mvc.perform(delete(location)).andExpect(status().isNoContent());
+        entityManager.flush();
+        assertThat(jdbc.queryForObject("select count(*) from experience_links where experience_id = ?", Long.class, id)).isZero();
+    }
+
+    @Test void explicitlyEmptyLinksClearsLegacyLinkToo() throws Exception {
+        var data = experience(); data.put("link", "https://example.com/old");
+        var location = create(data);
+        mvc.perform(get(location)).andExpect(jsonPath("$.links[0]").value("https://example.com/old"));
+        data.put("links", List.of("https://example.com/new", "https://example.com/demo"));
+        mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.links.length()").value(2));
+        data.put("links", List.of());
+        mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.links").isEmpty())
+                .andExpect(jsonPath("$.link").value(""));
+    }
+
+    @Test void rejectsInvalidOrExcessiveLinkArrays() throws Exception {
+        for (var links : List.of(List.of("javascript:alert(1)"), List.of(""),
+                Arrays.asList((String)null), java.util.Collections.nCopies(11,"https://example.com"))) {
+            var data = experience(); data.put("links", links);
+            mvc.perform(post("/api/experiences").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Test void rejectsOverlongResultsAndClearsResultsForOtherTypes() throws Exception {
+        for (var field : List.of("placement", "awardName")) {
+            var data = experience(); data.put("type", "COMPETITION");
+            data.put(field, "가".repeat(field.equals("placement") ? 41 : 101));
+            mvc.perform(post("/api/experiences").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(data)))
+                    .andExpect(status().isBadRequest());
+        }
+        var data = experience(); data.put("placement", "1위"); data.put("awardName", "대상");
+        mvc.perform(get(create(data))).andExpect(jsonPath("$.placement").value(""))
+                .andExpect(jsonPath("$.awardName").value(""));
     }
 }

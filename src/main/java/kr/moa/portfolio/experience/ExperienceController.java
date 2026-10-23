@@ -63,9 +63,11 @@ public class ExperienceController {
         if (r.endDate() != null && !r.ongoing() && r.endDate().isBefore(r.startDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후로 입력해주세요.");
         }
-        if (r.link() != null && !r.link().isBlank()) {
+        var links = r.links() != null ? r.links()
+                : r.link() == null || r.link().isBlank() ? List.<String>of() : List.of(r.link());
+        for (var link : links) {
             try {
-                var uri = URI.create(r.link().strip());
+                var uri = URI.create(link.strip());
                 if (!("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme()))
                         || uri.getHost() == null) throw new IllegalArgumentException();
             } catch (IllegalArgumentException e) {
