@@ -37,7 +37,7 @@
     CERTIFICATE: {label:'자격증', icon:'certificate', color:'#8f88a1', bg:'#f1edf6'},
     PAPER: {label:'논문', icon:'paper', color:'#7e94a2', bg:'#edf2f5'},
     OVERSEAS: {label:'해외 경험', icon:'globe', color:'#7b9a94', bg:'#eaf2ef'},
-    ACTIVITY: {label:'대외활동', icon:'people', color:'#b28d8f', bg:'#f6ecec'},
+    ACTIVITY: {label:'동아리/대외활동', icon:'people', color:'#b28d8f', bg:'#f6ecec'},
     EDUCATION: {label:'교육 / 기타', icon:'book', color:'#9c947a', bg:'#f1efe7'}
   };
   const $ = selector => document.querySelector(selector);
