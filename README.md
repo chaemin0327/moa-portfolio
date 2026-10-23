@@ -53,3 +53,11 @@ Windows에서는 `mvnw.cmd spring-boot:run`을 사용합니다.
 - API 통합 테스트 7개를 포함합니다. IntelliJ 실행 설정은 작성 당시 점검 중이며, 터미널 Maven 빌드와 테스트는 통과했습니다.
 
 경험 입력 흐름과 프로젝트 정리 방식은 [FlowCV](https://flowcv.com/)와 [Peerlist Projects](https://blog.peerlist.io/p/introducing-peerlist-projects)를 참고했습니다. 화면과 코드는 이 프로젝트에서 작성했습니다.
+
+## 개발과 협업
+
+- [협업 규칙](docs/CONTRIBUTING.md): 이슈 → 영역별 브랜치 → PR → Squash merge
+- [경험 분류 설계와 조사 자료](docs/experience-categories.md)
+- [기존 개발 이력과 BE/FE 구분](docs/development-log.md)
+
+백엔드는 `src/main/java/`와 `src/test/java/`, 프론트엔드는 `src/main/resources/static/`에서 개발합니다. GitHub 이슈와 PR에 `be`, `fe`, `common` 영역 라벨과 작업 타입 라벨을 함께 붙입니다.
