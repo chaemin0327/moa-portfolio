@@ -1,13 +1,15 @@
 package kr.moa.portfolio.experience;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
 
 @Entity
 public class Experience {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    @Enumerated(EnumType.STRING) @Column(nullable = false)
+    @Enumerated(EnumType.STRING) @JdbcTypeCode(SqlTypes.VARCHAR) @Column(nullable = false, length = 32)
     ExperienceType type;
     @Column(nullable = false, length = 120) String title;
     @Column(length = 160) String organization;
