@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Experience {
@@ -26,6 +28,13 @@ public class Experience {
     boolean featured;
     boolean demo;
     @Column(length = 30) String customCategory;
+    @Column(length = 40) String placement;
+    @Column(length = 100) String awardName;
+    @ElementCollection
+    @CollectionTable(name = "experience_links", joinColumns = @JoinColumn(name = "experience_id"))
+    @OrderColumn(name = "link_order")
+    @Column(name = "url", length = 1000, nullable = false)
+    List<String> links = new ArrayList<>();
 
     protected Experience() {}
 
@@ -40,9 +49,22 @@ public class Experience {
         endDate = r.ongoing() ? null : r.endDate(); ongoing = r.ongoing();
         participants = clean(r.participants()); role = clean(r.role());
         description = clean(r.description()); outcome = clean(r.outcome());
-        tags = clean(r.tags()); link = clean(r.link()); featured = r.featured();
+        tags = clean(r.tags()); featured = r.featured();
+        var requestedLinks = r.links() != null ? r.links()
+                : clean(r.link()).isEmpty() ? List.<String>of() : List.of(r.link());
+        var normalizedLinks = requestedLinks.stream().map(String::strip).distinct().toList();
+        links.clear(); links.addAll(normalizedLinks);
+        link = links.isEmpty() ? "" : links.getFirst();
+        boolean resultType = type == ExperienceType.COMPETITION || type == ExperienceType.AWARD;
+        placement = resultType ? clean(r.placement()) : "";
+        awardName = resultType ? clean(r.awardName()) : "";
         customCategory = type == ExperienceType.CUSTOM
                 ? clean(r.customCategory()).replaceAll("(?U)\\s+", " ") : "";
+    }
+
+    List<String> resolvedLinks() {
+        if (!links.isEmpty()) return List.copyOf(links);
+        return clean(link).isEmpty() ? List.of() : List.of(link);
     }
 
     private static String clean(String value) { return value == null ? "" : value.strip(); }

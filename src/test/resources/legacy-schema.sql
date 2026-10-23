@@ -6,5 +6,5 @@ CREATE TABLE experience (
   participants VARCHAR(300), role VARCHAR(200), description VARCHAR(10000),
   outcome VARCHAR(1000), tags VARCHAR(300), link VARCHAR(1000), featured BOOLEAN NOT NULL, demo BOOLEAN NOT NULL
 );
-INSERT INTO experience(type,title,start_date,ongoing,featured,demo)
-VALUES ('PROJECT','기존에 저장한 프로젝트','2026-01-01',FALSE,TRUE,FALSE);
+INSERT INTO experience(type,title,start_date,ongoing,featured,demo,link)
+VALUES ('PROJECT','기존에 저장한 프로젝트','2026-01-01',FALSE,TRUE,FALSE,'https://example.com/legacy');

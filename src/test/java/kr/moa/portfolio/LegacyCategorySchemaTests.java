@@ -30,6 +30,7 @@ class LegacyCategorySchemaTests {
         }
         mvc.perform(get("/api/experiences/1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("기존에 저장한 프로젝트"))
+                .andExpect(jsonPath("$.links[0]").value("https://example.com/legacy"))
                 .andExpect(jsonPath("$.featured").value(true));
     }
 }
