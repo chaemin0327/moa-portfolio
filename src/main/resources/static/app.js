@@ -141,12 +141,36 @@
     $('#demo-note').hidden = !state.experiences.some(e => e.demo);
     document.querySelectorAll('[data-layout]').forEach(button => {button.classList.toggle('selected', button.dataset.layout === state.layout);button.setAttribute('aria-pressed', String(button.dataset.layout === state.layout));});
   }
+  function updateTimelineNavigation() {
+    const rail = $('#timeline-list');
+    const maxScroll = Math.max(0, rail.scrollWidth - rail.clientWidth);
+    $('#timeline-navigation').hidden = rail.clientWidth === 0 || maxScroll <= 1;
+    $('#timeline-prev').disabled = rail.scrollLeft <= 1;
+    $('#timeline-next').disabled = rail.scrollLeft >= maxScroll - 1;
+  }
+  function moveTimeline(direction) {
+    const column = $('#timeline-list .timeline-year');
+    if (!column) return;
+    $('#timeline-list').scrollBy({left:direction * (column.getBoundingClientRect().width + 24),
+      behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+  }
+  function timelineCard(e) {
+    const meta = [e.organization,e.role].filter(Boolean).join(' · ');
+    const duration = e.ongoing ? `${e.startDate.replaceAll('-','.')} — 진행 중`
+      : e.endDate && e.endDate !== e.startDate ? `${e.startDate.replaceAll('-','.')} — ${e.endDate.replaceAll('-','.')}` : '';
+    return `<li class="timeline-item"><button class="timeline-card" data-detail="${e.id}" aria-label="${escape(e.title)} · ${escape(e.startDate)}"><span class="timeline-card-top">${badge(e)}<time class="timeline-month" datetime="${escape(e.startDate)}">${Number(e.startDate.slice(5,7))}월 ${Number(e.startDate.slice(8,10))}일</time></span><span class="timeline-title">${escape(e.title)}</span>${meta?`<span class="timeline-meta">${escape(meta)}</span>`:''}${resultSummary(e)?`<span class="timeline-result">${escape(resultSummary(e))}</span>`:''}${duration?`<span class="timeline-period">${escape(duration)}</span>`:''}</button></li>`;
+  }
   function renderTimeline() {
     const kind = $('#timeline-type').value;
-    const list = state.experiences.filter(e => matchesCategory(e,kind)).sort((a,b) => b.startDate.localeCompare(a.startDate) || b.id-a.id);
-    if (!list.length) { $('#timeline-list').innerHTML = `<div class="empty-state"><span>${icon('timeline')}</span><h3>아직 경험이 없어요</h3><button class="button primary" data-action="add">경험 추가하기</button></div>`; return; }
-    const years = [...new Set(list.map(e => e.startDate.slice(0,4)))];
-    $('#timeline-list').innerHTML = years.map(year => `<section class="timeline-year"><h3 class="year-label">${year}</h3><div class="timeline-items">${list.filter(e => e.startDate.startsWith(year)).map(e => `<div class="timeline-item" style="${typeStyle(e.type)}"><button class="timeline-card" data-detail="${e.id}"><span class="timeline-month">${e.startDate.slice(5,7)}월 ${e.startDate.slice(8,10)}일</span><div>${badge(e)}<h3>${escape(e.title)}</h3><p>${escape(e.organization)}${e.role ? ' · '+escape(e.role) : ''}</p>${resultSummary(e)?`<p class="timeline-result">${escape(resultSummary(e))}</p>`:''}</div><i>${icon('arrowRight')}</i></button></div>`).join('')}</div></section>`).join('');
+    const list = state.experiences.filter(e => matchesCategory(e,kind)).sort((a,b) => a.startDate.localeCompare(b.startDate) || a.id-b.id);
+    $('#timeline-list').tabIndex = list.length ? 0 : -1;
+    if (!list.length) {
+      $('#timeline-list').innerHTML = `<div class="empty-state"><span>${icon('timeline')}</span><h3>아직 경험이 없어요</h3><button class="button primary" data-action="add">경험 추가하기</button></div>`;
+    } else {
+      const years = [...new Set(list.map(e => e.startDate.slice(0,4)))];
+      $('#timeline-list').innerHTML = `<div class="timeline-track">${years.map(year => `<section class="timeline-year" aria-labelledby="timeline-year-${year}"><header class="timeline-year-header"><h3 class="year-label" id="timeline-year-${year}">${year}</h3></header><ol class="timeline-items">${list.filter(e => e.startDate.startsWith(year)).map(timelineCard).join('')}</ol></section>`).join('')}</div>`;
+    }
+    updateTimelineNavigation();
   }
   function renderPortfolio() {
     const p = state.profile, list = state.experiences.filter(e => e.featured).sort((a,b) => b.startDate.localeCompare(a.startDate) || b.id-a.id);
@@ -168,6 +192,7 @@
     $('#sidebar').classList.remove('open');
     if (location.hash !== `#${page}`) history.replaceState(null,'',`#${page}`);
     renderFilters();
+    updateTimelineNavigation();
     window.scrollTo({top:0,behavior:'instant'});
   }
   function configureFields() {
@@ -245,7 +270,11 @@
   });
   $('#search').addEventListener('input', event=>{state.query=event.target.value.trim();renderExperiences();});
   $('#sort').addEventListener('change',event=>{state.sort=event.target.value;renderExperiences();});
-  $('#timeline-type').addEventListener('change',renderTimeline);
+  $('#timeline-type').addEventListener('change',()=>{renderTimeline();$('#timeline-list').scrollTo({left:0,behavior:'instant'});updateTimelineNavigation();});
+  $('#timeline-prev').addEventListener('click',()=>moveTimeline(-1));
+  $('#timeline-next').addEventListener('click',()=>moveTimeline(1));
+  $('#timeline-list').addEventListener('scroll',updateTimelineNavigation,{passive:true});
+  window.addEventListener('resize',updateTimelineNavigation);
   $('#type-picker').innerHTML=Object.entries(types).map(([k,v])=>`<label class="type-option ${k === 'CUSTOM' ? 'custom-type-option' : ''}"><input type="radio" name="type" value="${k}" ${k==='PROJECT'?'checked':''} required><span>${icon(v.icon)}${v.label}</span></label>`).join('');
   $('#experience-form').addEventListener('change', configureFields);
   $('#experience-form').addEventListener('submit', async event => {

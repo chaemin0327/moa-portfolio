@@ -161,18 +161,30 @@ main { padding: 32px 42px 32px; max-width: 1550px; margin: 0 auto; }
 .error-state { color: var(--danger); }
 .timeline-tools { display: flex; justify-content: space-between; align-items: center; padding: 15px 0 28px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .timeline-tools select { margin-left: 10px; background: white; border: 1px solid var(--line); border-radius: 7px; padding: 8px 25px 8px 10px; font-size: 12px; }
-.timeline-year { display: grid; grid-template-columns: 75px 1fr; gap: 20px; margin-bottom: 30px; }
-.year-label { font-size: 26px; font-weight: 650; letter-spacing: -1px; color: var(--ink); position: sticky; top: 25px; align-self: start; }
-.timeline-items { border-left: 1px solid var(--line); padding-left: 28px; }
-.timeline-item { position: relative; margin-bottom: 17px; }
-.timeline-item:before { content: ''; position: absolute; left: -34px; top: 27px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 6px white; }
-.timeline-card { display: grid; grid-template-columns: 80px 1fr auto; gap: 20px; border: 1px solid var(--line); border-radius: 10px; background: white; padding: 22px; text-align: left; width: 100%; align-items: start; }
-.timeline-card:hover { border-color: var(--accent-outline); }
-.timeline-month { font-size: 12px; color: var(--muted); padding-top: 2px; }
-.timeline-card h3 { font-size: 16px; margin: 9px 0 5px; font-weight: 600; }
-.timeline-card p { font-size: 12px; color: var(--muted); margin: 0; }
-.timeline-card .icon { color: var(--muted); width: 17px; margin-top: 5px; }
-.timeline-card .type-badge svg { width: 13px; margin: 0; color: inherit; }
+.timeline-navigation { display: flex; gap: 4px; }
+.timeline-navigation .icon-button { border: 1px solid var(--line); width: 34px; height: 34px; }
+.timeline-navigation .icon-button:disabled { cursor: default; opacity: .35; }
+#timeline-prev svg { transform: rotate(180deg); }
+.timeline-viewport { overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 2px; overscroll-behavior-x: contain; padding: 4px 2px 16px; scrollbar-width: thin; scrollbar-color: var(--accent-outline) var(--surface); }
+.timeline-viewport:focus-visible { outline: 2px solid var(--accent-outline); outline-offset: 4px; }
+.timeline-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(320px, 1fr); gap: 24px; align-items: start; }
+.timeline-year { min-width: 0; scroll-snap-align: start; }
+.timeline-year-header { position: relative; padding-bottom: 22px; }
+.timeline-year-header::after { content: ''; position: absolute; left: 0; right: -24px; bottom: 0; height: 2px; background: var(--line); }
+.timeline-year:last-child .timeline-year-header::after { right: 0; }
+.timeline-year-header::before { content: ''; position: absolute; left: 0; bottom: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); z-index: 1; }
+.year-label { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.8px; color: var(--ink); }
+.timeline-items { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 14px; }
+.timeline-item { min-width: 0; }
+.timeline-card { display: flex; flex-direction: column; align-items: stretch; gap: 12px; border: 1px solid var(--line); border-radius: 10px; background: white; padding: 18px; text-align: left; width: 100%; min-height: 150px; }
+.timeline-card:hover { border-color: var(--accent-outline); background: var(--surface); }
+.timeline-card-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.timeline-month { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.timeline-title { font-size: 16px; line-height: 1.6; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.timeline-meta, .timeline-period { font-size: 12px; color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }
+.timeline-period { margin-top: auto; font-size: 11px; }
+.timeline-card .type-badge { align-self: start; }
+.timeline-card .type-badge svg { width: 13px; }
 .portfolio-help { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--text); background: var(--accent-light); padding: 14px 17px; border-radius: 8px; margin-bottom: 26px; }
 .portfolio-help > i { color: var(--accent); }
 .portfolio-help > i svg { width: 16px; }
@@ -337,17 +349,7 @@ main { padding: 32px 42px 32px; max-width: 1550px; margin: 0 auto; }
   .card-date { font-size: 11px; }
   .add-card { min-height: 165px; }
   .search-box input, .sort-label select { font-size: 11px; }
-  .timeline-year { grid-template-columns: 42px 1fr; gap: 12px; }
-  .year-label { font-size: 20px; }
-  .timeline-items { padding-left: 17px; }
-  .timeline-item:before { left: -23px; top: 23px; }
-  .timeline-card { grid-template-columns: 1fr auto; gap: 6px 8px; padding: 16px; }
-  .timeline-month { grid-column: 1; font-size: 10px; padding-bottom: 3px; }
-  .timeline-card > div { grid-column: 1; }
-  .timeline-card > i { grid-column: 2; grid-row: 1 / span 2; }
-  .timeline-card h3 { font-size: 14px; }
   .timeline-tools { font-size: 11px; }
-  .timeline-tools > span { font-size: 10px; }
   .portfolio-sheet { padding: 27px 23px; }
   .portfolio-item { grid-template-columns: 1fr; gap: 7px; margin: 27px 0; }
   .portfolio-item h3 { font-size: 17px; }
@@ -414,7 +416,9 @@ main { padding: 32px 42px 32px; max-width: 1550px; margin: 0 auto; }
 #add-link { margin-top: 2px; font-size: 12px; }
 .related-links { display: grid; gap: 10px; margin-top: 12px; min-width: 0; }
 .related-links a { font-size: 12px; color: var(--accent); text-decoration: underline; overflow-wrap: anywhere; }
-.timeline-card .timeline-result { color: var(--amber); margin-top: 7px; }
+.timeline-card .timeline-result { color: var(--amber); font-size: 12px; line-height: 1.7; }
 @media (max-width: 600px) { .result-fieldset .form-grid { grid-template-columns: 1fr; } }
 
 @media (max-width: 600px) { .archive-intro { margin-bottom: 22px; } .archive-intro h1 { font-size: 26px; } }
+
+@media (max-width: 600px) { .timeline-track { grid-auto-columns: minmax(268px, calc(100vw - 96px)); } .year-label { font-size: 24px; } .timeline-card { padding: 16px; } .timeline-title { font-size: 15px; } }
