@@ -61,6 +61,7 @@ Windows에서는 `mvnw.cmd spring-boot:run`을 사용합니다.
 
 - [협업 규칙](docs/CONTRIBUTING.md): 이슈 → 영역별 브랜치 → PR → Squash merge
 - [경험 분류 설계와 조사 자료](docs/experience-categories.md)
+- [브랜드·로고 시안](docs/brand/README.md)
 - [기존 개발 이력과 BE/FE 구분](docs/development-log.md)
 
 백엔드는 `src/main/java/`와 `src/test/java/`, 프론트엔드는 `src/main/resources/static/`에서 개발합니다. GitHub 이슈와 PR에 `be`, `fe`, `common` 영역 라벨과 작업 타입 라벨을 함께 붙입니다.
