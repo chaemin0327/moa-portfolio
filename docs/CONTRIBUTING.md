@@ -1,6 +1,6 @@
 # 협업 가이드
 
-[여기남김 협업 가이드](https://github.com/ApptiveDev/yeogi-namgim/blob/main/docs/CONTRIBUTING.md)의 이슈·브랜치·커밋·PR 기준을 모아에 적용합니다.
+[여기남김 협업 가이드](https://github.com/ApptiveDev/yeogi-namgim/blob/main/docs/CONTRIBUTING.md)의 이슈·브랜치·커밋·PR 기준을 킵잇에 적용합니다.
 
 ## 작업 순서
 
