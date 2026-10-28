@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Moa · 전체 테스트" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="keep it · 전체 테스트" type="JUnit" factoryName="JUnit">
     <module name="moa-portfolio" />
     <option name="TEST_OBJECT" value="class" />
     <option name="MAIN_CLASS_NAME" value="kr.moa.portfolio.PortfolioApiTests" />

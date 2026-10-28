@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Moa · 모아 실행" type="Application" factoryName="Application">
+  <configuration default="false" name="keep it · 킵잇 실행" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="kr.moa.portfolio.MoaPortfolioApplication" />
     <module name="moa-portfolio" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />

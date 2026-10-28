@@ -1,6 +1,6 @@
-# 모아 · 경험 아카이브
+# keep it · 킵잇
 
-경험을 하나씩 기록하고 카드, 타임라인, 포트폴리오로 돌아보는 개인용 웹앱 시제품입니다.
+**keep it(킵잇)**은 경험을 하나씩 기록하고 카드, 타임라인, 포트폴리오로 돌아보는 개인용 웹앱 시제품입니다.
 
 ## 구현한 기능
 
@@ -43,8 +43,8 @@ Windows에서는 `mvnw.cmd spring-boot:run`을 사용합니다.
 1. 프로젝트 폴더 또는 `pom.xml`을 Maven 프로젝트로 엽니다.
 2. Project SDK는 Java 21, Maven은 Maven Wrapper를 사용합니다.
 3. Maven 도구 창에서 프로젝트를 동기화합니다.
-4. `MoaPortfolioApplication`의 `main` 또는 `Moa · 모아 실행` 구성을 실행합니다.
-5. 테스트는 `PortfolioApiTests` 또는 `Moa · 전체 테스트` 구성을 사용합니다.
+4. `MoaPortfolioApplication`의 `main` 또는 `keep it · 킵잇 실행` 구성을 실행합니다.
+5. 테스트는 `PortfolioApiTests` 또는 `keep it · 전체 테스트` 구성을 사용합니다.
 
 실행 포트가 사용 중이면 기존 앱을 종료하거나 `PORT` 환경변수를 변경합니다.
 
